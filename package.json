@@ -1,0 +1,25 @@
+{
+  "name": "kbn-alert-load",
+  "version": "1.7.0",
+  "description": "command-line utility for doing kibana alerting load tests",
+  "main": "kbn-alert-load.js",
+  "author": "pmuellr",
+  "bin": {
+    "kbn-alert-load": "kbn-alert-load.js"
+  },
+  "scripts": {},
+  "homepage": "https://github.com/pmuellr/kbn-alert-load",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmuellr/kbn-alert-load.git"
+  },
+  "dependencies": {
+    "@elastic/elasticsearch": "^7.9.1",
+    "chalk": "^4.1.0",
+    "meow": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.3"
+  }
+}
