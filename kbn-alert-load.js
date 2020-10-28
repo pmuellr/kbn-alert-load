@@ -21,10 +21,10 @@ CommandMap.set('help', commands.help)
 if (require.main === module) main()
 
 function main() {
-  const { config, command, commandArgs } = parseArgs()
-  logger.debug(`cliArguments: ${JSON.stringify({ config, command, commandArgs })}`)
+  const { config, stack, command, commandArgs } = parseArgs()
+  logger.debug(`cliArguments: ${JSON.stringify({ config, stack, command, commandArgs })}`)
 
-  logger.debug(`using config: ${config}`)
+  logger.debug(`using config: ${config}, stack: ${stack}`)
 
   const commandHandler = CommandMap.get(command || 'help')
   if (commandHandler == null) {
@@ -33,7 +33,7 @@ function main() {
   }
  
   try {
-    commandHandler(config, commandArgs)
+    commandHandler(config, stack, commandArgs)
   } catch (err) {
     logger.logErrorAndExit(`error runninng "${command} ${commandArgs.join(' ')}: ${err}`)
   }
