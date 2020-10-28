@@ -39,3 +39,5 @@ export interface Deployment {
   elasticsearch: ResourceInfo
   kibana: ResourceInfo
 }
+
+export type CommandHandler = (config: string, args: string[]) => Promise<void>

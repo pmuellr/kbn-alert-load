@@ -2,7 +2,7 @@
 
 'use strict'
 
-/** @typedef { import('./lib/types').CliArguments } CliArguments */
+/** @typedef { import('./lib/types').CommandHandler } CommandHandler */
 
 const logger = require('./lib/logger')
 const commands = require('./lib/commands')
@@ -19,14 +19,21 @@ function main() {
   const { config, command, commandArgs } = parseArgs()
   logger.debug(`cliArguments: ${JSON.stringify({ config, command, commandArgs })}`)
 
-  logger.log(`using config: ${config}`)
+  logger.debug(`using config: ${config || '(default)'}`)
 
+  /** @type { Map<string, CommandHandler> } */
+  const commandMap = new Map()
+  commandMap.set('run', commands.run)
+  commandMap.set('help', commands.help)
+
+  const commandHandler = commandMap.get(command || 'help')
+  if (commandHandler == null) {
+    logger.logErrorAndExit(`command not implemented: "${command}"`)
+    return
+  }
+ 
   try {
-    if (command === 'run') {
-      commands.run(config, commandArgs)
-    } else {
-      throw new Error('command is not supported')
-    }
+    commandHandler(config, commandArgs)
   } catch (err) {
     logger.logErrorAndExit(`error runninng "${command} ${commandArgs.join(' ')}: ${err}`)
   }
