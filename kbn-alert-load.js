@@ -12,6 +12,11 @@ module.exports = {
   main,
 }
 
+/** @type { Map<string, CommandHandler> } */
+const CommandMap = new Map()
+CommandMap.set('run', commands.run)
+CommandMap.set('help', commands.help)
+
 // @ts-ignore
 if (require.main === module) main()
 
@@ -19,14 +24,9 @@ function main() {
   const { config, command, commandArgs } = parseArgs()
   logger.debug(`cliArguments: ${JSON.stringify({ config, command, commandArgs })}`)
 
-  logger.debug(`using config: ${config || '(default)'}`)
+  logger.debug(`using config: ${config}`)
 
-  /** @type { Map<string, CommandHandler> } */
-  const commandMap = new Map()
-  commandMap.set('run', commands.run)
-  commandMap.set('help', commands.help)
-
-  const commandHandler = commandMap.get(command || 'help')
+  const commandHandler = CommandMap.get(command || 'help')
   if (commandHandler == null) {
     logger.logErrorAndExit(`command not implemented: "${command}"`)
     return

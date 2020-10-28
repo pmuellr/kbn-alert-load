@@ -9,35 +9,69 @@ export interface ResourceSizes {
   ram: number // x 1GB
 }
 
-export interface ResourceInfo {
-  sizes: ResourceSizes
-  healthy: boolean
-  status: string
-  url: string
-}
 
 export interface DeploymentOptions {
-  elasticsearch: {
+  es: {
     sizes: ResourceSizes
   }
-  kibana: {
+  kb: {
     sizes: ResourceSizes
   }
 }
 
 export interface Deployment {
-  config?: string,
+  readonly config: string,
+  readonly id: string
+  readonly name: string
+  readonly healthy: boolean
+  readonly status: string
+
+  delete(): Promise<void>
+}
+
+export interface DeploymentCtorOptions {
+  config: string,
   id: string
   name: string
-  created: boolean
   healthy: boolean
   status: string
-  credentials: {
-    username: string
-    password: string
-  }
-  elasticsearch: ResourceInfo
-  kibana: ResourceInfo
+  esUrl: string
+  kbUrl: string
+}
+
+export interface CreateDeploymentOptions {
+  config: string
+  name: string
+  deploymentName: string
+  esSize: number
+  kbSize: number
+}
+
+export interface CreateDeploymentResult {
+  id: string
+  username: string
+  password: string
+}
+
+export interface GetDeploymentOptions {
+  config: string
+  name: string
+  id: string
+}
+
+export interface GetDeploymentResult {
+  healthy: boolean
+  status: string
+  esEndpoint: string
+  esPort: number
+  kbEndpoint: string
+  kbPort: number
+}
+
+export interface DeleteDeploymentOptions {
+  config: string
+  name: string
+  id: string
 }
 
 export type CommandHandler = (config: string, args: string[]) => Promise<void>
