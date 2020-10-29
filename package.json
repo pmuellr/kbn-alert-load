@@ -15,8 +15,7 @@
     "url": "https://github.com/pmuellr/kbn-alert-load.git"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^7.9.1",
-    "chalk": "^4.1.0",
+    "axios": "^0.21.0",
     "meow": "^7.0.1"
   },
   "devDependencies": {

@@ -1,24 +1,27 @@
+export interface DeploymentSpec {
+  es: string // AxB - a instances with b gb of ram; eg 1x4
+  kb: string // "
+}
+
+export interface Scenario {
+  id: string
+  minutes: number
+  deployments: Array<DeploymentSpec>
+  alerts: number
+}
+
 export interface CliArguments {
   command: string
   commandArgs: string[]
   config: string
   stack?: string
+  minutes?: number
 }
 
-export interface ResourceSizes {
-  instances: number
-  ram: number // x 1GB
-}
-
-
-export interface DeploymentOptions {
-  es: {
-    sizes: ResourceSizes
-  }
-  kb: {
-    sizes: ResourceSizes
-  }
-}
+// export interface ResourceSizes {
+//   instances: number
+//   ram: number // x 1GB
+// }
 
 export interface Deployment {
   readonly config: string
@@ -28,6 +31,8 @@ export interface Deployment {
   readonly status: string
   readonly version: string
   readonly zone: string
+  readonly esUrl: string
+  readonly kbUrl: string
 
   delete(): Promise<void>
 }
@@ -82,4 +87,23 @@ export interface DeleteDeploymentOptions {
   id: string
 }
 
-export type CommandHandler = (config: string, stack: string | undefined, args: string[]) => Promise<void>
+export interface CommandOptions {
+  config: string
+  stack: string
+  minutes: number
+}
+
+export type CommandHandler = (
+  options: CommandOptions,
+  args: string[]
+) => Promise<void>
+
+export interface EventLogRecord {
+  deployment: string
+  provider: string
+  date: string
+  duration: number
+  outcome: string
+}
+
+export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T

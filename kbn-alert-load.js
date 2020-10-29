@@ -5,7 +5,7 @@
 /** @typedef { import('./lib/types').CommandHandler } CommandHandler */
 
 const logger = require('./lib/logger')
-const commands = require('./lib/commands')
+const { commands } = require('./lib/commands')
 const { parseArgs } = require('./lib/parse_args')
 
 module.exports = {
@@ -14,14 +14,15 @@ module.exports = {
 
 /** @type { Map<string, CommandHandler> } */
 const CommandMap = new Map()
-CommandMap.set('run', commands.run)
-CommandMap.set('help', commands.help)
+for (const command of commands) {
+  CommandMap.set(command.name, command)
+}
 
 // @ts-ignore
 if (require.main === module) main()
 
 function main() {
-  const { config, stack, command, commandArgs } = parseArgs()
+  const { config, stack, minutes, command, commandArgs } = parseArgs()
   logger.debug(`cliArguments: ${JSON.stringify({ config, stack, command, commandArgs })}`)
 
   logger.debug(`using config: ${config}, stack: ${stack}`)
@@ -33,7 +34,7 @@ function main() {
   }
  
   try {
-    commandHandler(config, stack, commandArgs)
+    commandHandler({ config, stack, minutes }, commandArgs)
   } catch (err) {
     logger.logErrorAndExit(`error runninng "${command} ${commandArgs.join(' ')}: ${err}`)
   }
