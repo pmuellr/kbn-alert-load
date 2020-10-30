@@ -29,6 +29,11 @@ TBD; run `kbn-alert-load` with no parameters for help.
 
 ## change log
 
-#### 1.0.0 - 2020-1?-??
+#### 1.x.x - ????-??-??
+
+- add lsd, rmd, and rmdall commands
+- print existing deployments at begin and end of run command
+
+#### 1.0.0 - 2020-10-29
 
 - initial release
