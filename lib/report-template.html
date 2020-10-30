@@ -10,10 +10,22 @@
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    td {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+  </style>
 </head>
 
 <body>
   <h1>kbn-alert-load %runName% report for %alerts% alerts</h1>
+
+  <table>
+    <tr><td>date:</td><td>%date%</td></tr>
+    <tr><td>version:</td><td>%version%</td></tr>
+    <tr><td>zone:</td><td>%zone%</td></tr>
+  </table>
 
   <h2>execution times</h2>
   <div id="vis-execution-time"></div>
@@ -48,21 +60,29 @@
     .map(event => {
       event.deployment = event.deployment.split(/-/g).slice(2).join(' ')
       event.duration = event.duration / 1000
-      event.minute = Math.floor((Date.parse(event.date) - earliestDate) / 1000 / 60)
+      event.dateRelative = Date.parse(event.date) - earliestDate
+      event.minute = event.dateRelative / 1000 / 60
       return event
     })
 
   const specExecutionTime = {
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
-    data: { values: events },
-    mark: 'point',
-    tooltip: true,
+    mark: { 
+      type: 'point', 
+      shape: 'stroke',
+      size: 50,
+      strokeWidth: 1,
+      opacity: 0.4,
+      xOffset: 4,
+      tooltip: true
+    },
     encoding: {
       x: {
-        title: 'time',
-        field: 'date',
+        title: 'minutes since start',
+        field: 'dateRelative',
         type: 'temporal',
         axis: {
+          format: '%-M',
           formatType: 'time',
           tickCount: 'minute',
         }
@@ -71,25 +91,25 @@
         title: 'execution time (seconds)',
         field: 'duration',
         type: 'quantitative',
-        scale: { zero: true }
+        scale: { zero: true, type: 'log' },
+        axis: { grid: false }
       },
       column: {
         field: 'deployment'
       }
-    }
+    },
+    data: { values: events }
   }
 
   const specExecutionsPerMinute = {
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
-    data: { values: events },
-    mark: 'bar',
-    tooltip: true,
+    mark: { type: 'bar', tooltip: true},
     encoding: {
       x: {
-        bin: true,
+        bin: { step: 1 },
         field: 'minute',
         type: 'ordinal',
-        step: 1,
+        title: 'minutes since start (binned)',
       },
       y: {
         title: 'executions',
@@ -98,7 +118,8 @@
       column: {
         field: 'deployment'
       }
-    }
+    },
+    data: { values: events }
   }
 
   vegaEmbed('#vis-execution-time', specExecutionTime);
