@@ -4,22 +4,25 @@
 
 /** @type { Array<Scenario> } */
 module.exports = [
-  scenarioA(100),
-  scenarioA(200),
-  scenarioA(300),
-  scenarioA(400),
+  scenarioJustAlerts(100),
+  scenarioJustAlerts(200),
+  scenarioJustAlerts(300),
+  scenarioJustAlerts(400),
+  scenarioJustAlerts(500),
+  scenarioJustAlerts(1000),
+  scenarioJustAlerts(2000),
 ]
 
 /** @type { (alerts: number) => Scenario } */
-function scenarioA(alerts) {
+function scenarioJustAlerts(alerts) {
   return {
-    id: `A-${alerts}`,
+    id: `JustAlerts-${alerts}`,
     minutes: 10,
     deployments: [
       { es: '1x1', kb: '1x1' },
-      { es: '1x4', kb: '1x4' },
       { es: '1x8', kb: '2x8' },
       { es: '1x8', kb: '4x8' },
+      { es: '1x15', kb: '8x8' },
     ],
     alerts: alerts
   }

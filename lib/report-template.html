@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>kbn-alert-load %runName% report for %alerts% alerts</title>
+  <title>%reportName%: kbn-alert-load report</title>
   <link rel="shortcut icon" href="https://elastic.co/favicon.ico" type="image/x-icon">
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@4"></script>
@@ -19,19 +19,20 @@
 </head>
 
 <body>
-  <h1>kbn-alert-load %runName% report for %alerts% alerts</h1>
+  <h1>kbn-alert-load report: %reportName%</h1>
 
   <table>
     <tr><td>date:</td><td>%date%</td></tr>
     <tr><td>version:</td><td>%version%</td></tr>
     <tr><td>zone:</td><td>%zone%</td></tr>
+    <tr><td>alerts:</td><td>%alerts%</td></tr>
   </table>
 
   <h2>execution times</h2>
-  <div id="vis-execution-time"></div>
+  <div style="width: 100%" id="vis-execution-time"></div>
 
   <h2>executions per minute</h2>
-  <div id="vis-executions-per-minute"></div>
+  <div style="width: 100%" id="vis-executions-per-minute"></div>
 
   <hr>
 
@@ -69,11 +70,10 @@
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
     mark: { 
       type: 'point', 
-      shape: 'stroke',
-      size: 50,
+      shape: 'square',
+      size: 1,
       strokeWidth: 1,
       opacity: 0.4,
-      xOffset: 4,
       tooltip: true
     },
     encoding: {
