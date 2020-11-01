@@ -104,6 +104,8 @@ export interface EventLogRecord {
   date: string
   duration: number
   outcome: string
+  alert?: string
+  action?: string
 }
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T

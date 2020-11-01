@@ -28,11 +28,14 @@
     <tr><td>alerts:</td><td>%alerts%</td></tr>
   </table>
 
+  <h2>executions per minute</h2>
+  <div style="width: 100%" id="vis-executions-per-minute"></div>
+
   <h2>execution times</h2>
   <div style="width: 100%" id="vis-execution-time"></div>
 
-  <h2>executions per minute</h2>
-  <div style="width: 100%" id="vis-executions-per-minute"></div>
+  <h2>times between alert executions</h2>
+  <div style="width: 100%" id="vis-time-between-alert-executions"></div>
 
   <hr>
 
@@ -52,19 +55,29 @@
 <script>
   const allEvents = getEventLog()
 
-  const earliestDate = allEvents
-    .map(event => Date.parse(event.date))
-    .sort()
-    [0]
+  const earliestDate = Date.parse(allEvents[0].date)
 
   const events = allEvents
     .map(event => {
       event.deployment = event.deployment.split(/-/g).slice(2).join(' ')
       event.duration = event.duration / 1000
-      event.dateRelative = Date.parse(event.date) - earliestDate
+      event.dateNumber = Date.parse(event.date)
+      event.dateRelative = event.dateNumber - earliestDate
       event.minute = event.dateRelative / 1000 / 60
       return event
     })
+
+  const lastExecutions = new Map()
+  events.forEach(event => {
+    if (!event.alert) return
+
+    const key = `${event.deployment}-${event.alert}`
+    const lastExecution = lastExecutions.get(key)
+    if (lastExecution) {
+      event.lastInterval = (event.dateNumber - lastExecution) / 1000 / 60
+    }
+    lastExecutions.set(key, event.dateNumber)
+  })
 
   const specExecutionTime = {
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
@@ -101,6 +114,41 @@
     data: { values: events }
   }
 
+  const specTimeBetweenAlertExecutions = {
+    $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
+    mark: { 
+      type: 'point', 
+      shape: 'square',
+      size: 1,
+      strokeWidth: 1,
+      opacity: 0.4,
+      tooltip: true
+    },
+    encoding: {
+      x: {
+        title: 'minutes since start',
+        field: 'dateRelative',
+        type: 'temporal',
+        axis: {
+          format: '%-M',
+          formatType: 'time',
+          tickCount: 'minute',
+        }
+      },
+      y: {
+        title: 'last execution (minutes)',
+        field: 'lastInterval',
+        type: 'quantitative',
+        scale: { zero: true },
+        axis: { grid: false }
+      },
+      column: {
+        field: 'deployment'
+      }
+    },
+    data: { values: events }
+  }
+
   const specExecutionsPerMinute = {
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
     mark: { type: 'bar', tooltip: true},
@@ -124,6 +172,7 @@
 
   vegaEmbed('#vis-execution-time', specExecutionTime);
   vegaEmbed('#vis-executions-per-minute', specExecutionsPerMinute);
+  vegaEmbed('#vis-time-between-alert-executions', specTimeBetweenAlertExecutions)
 
   function getEventLog() {
     return ["%EventLog%"]
