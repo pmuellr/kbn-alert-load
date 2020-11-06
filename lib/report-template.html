@@ -59,7 +59,8 @@
 
   const events = allEvents
     .map(event => {
-      event.deployment = event.deployment.split(/-/g).slice(2).join(' ')
+      const [index, ...rest] = event.deployment.split(/-/g).slice(2)
+      event.deployment = `${index}: ${rest.join(' ')}`
       event.duration = event.duration / 1000
       event.dateNumber = Date.parse(event.date)
       event.dateRelative = event.dateNumber - earliestDate
