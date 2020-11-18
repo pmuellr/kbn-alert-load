@@ -1,27 +1,27 @@
-export interface DeploymentSpec {
-  es: string // AxB - a instances with b gb of ram; eg 1x4
-  kb: string // "
+export interface Scenario {
+  name: string
+  sortName?: string
+  version: string
+  esSpec: string
+  kbSpec: string
+  alerts: number
+  alertInterval: string
+  tmPollInterval: number
+  tmMaxWorkers: number
 }
 
-export interface Scenario {
+export interface Suite {
   id: string
-  minutes: number
-  deployments: Array<DeploymentSpec>
-  alerts: number
+  description: string
+  scenarios: Scenario[]
 }
 
 export interface CliArguments {
   command: string
   commandArgs: string[]
   config: string
-  stack?: string
-  minutes?: number
+  minutes: number
 }
-
-// export interface ResourceSizes {
-//   instances: number
-//   ram: number // x 1GB
-// }
 
 export interface Deployment {
   readonly config: string
@@ -33,6 +33,7 @@ export interface Deployment {
   readonly zone: string
   readonly esUrl: string
   readonly kbUrl: string
+  readonly scenario: Scenario
 
   delete(): Promise<void>
 }
@@ -47,6 +48,7 @@ export interface DeploymentCtorOptions {
   status: string
   esUrl: string
   kbUrl: string
+  scenario: Scenario
 }
 
 export interface CreateDeploymentOptions {
@@ -56,6 +58,8 @@ export interface CreateDeploymentOptions {
   deploymentName: string
   esSize: number
   kbSize: number
+  tmPollInterval: number
+  tmMaxWorkers: number
 }
 
 export interface CreateDeploymentResult {
@@ -89,7 +93,6 @@ export interface DeleteDeploymentOptions {
 
 export interface CommandOptions {
   config: string
-  stack: string
   minutes: number
 }
 
@@ -99,7 +102,7 @@ export type CommandHandler = (
 ) => Promise<void>
 
 export interface EventLogRecord {
-  deployment: string
+  scenario: string
   provider: string
   date: string
   duration: number
