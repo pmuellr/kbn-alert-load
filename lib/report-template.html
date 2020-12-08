@@ -62,6 +62,7 @@
   -->
 
   <div class="viz" id="vis-executions-per-minute"></div>
+  <div class="viz" id="vis-execution-failures-per-minute"></div>
   <div class="viz" id="vis-execution-time"></div>
   <div class="viz" id="vis-time-between-alert-executions"></div>
   <div class="viz" id="vis-kb-status"></div>
@@ -229,6 +230,35 @@
       }
     },
     data: { values: eventLog }
+  })
+
+  vegaEmbed('#vis-execution-failures-per-minute', {
+    $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
+    title: 'execution failures per minute',
+    width: chartWidth,
+    mark: { 
+      type: 'bar', 
+      tooltip: true, 
+      cornerRadiusEnd: 4,
+      color: colors[2],
+    },
+    encoding: {
+      x: {
+        bin: { step: 1 },
+        field: 'minute',
+        type: 'ordinal',
+        title: 'minutes since start (binned)',
+      },
+      y: {
+        title: 'executions',
+        aggregate: 'count',
+      },
+      column: {
+        field: 'scenario',
+        header: { title: null },
+      }
+    },
+    data: { values: eventLog.filter(log => log.outcome === 'failure') }
   })
 
   vegaEmbed('#vis-kb-status', {
