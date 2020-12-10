@@ -22,7 +22,7 @@ for (const command of commands) {
 if (require.main === module) main()
 
 function main() {
-  const { config, minutes, command, commandArgs } = parseArgs()
+  const { config, minutes, percentFiring, command, commandArgs } = parseArgs()
   logger.debug(`cliArguments: ${JSON.stringify({ config, command, commandArgs })}`)
 
   logger.debug(`using config: ${config}`)
@@ -34,7 +34,7 @@ function main() {
   }
  
   try {
-    commandHandler({ config, minutes }, commandArgs)
+    commandHandler({ config, minutes, percentFiring }, commandArgs)
   } catch (err) {
     logger.logErrorAndExit(`error runninng "${command} ${commandArgs.join(' ')}: ${err}`)
   }

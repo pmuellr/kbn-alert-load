@@ -21,6 +21,7 @@ export interface CliArguments {
   commandArgs: string[]
   config: string
   minutes: number
+  percentFiring: number
 }
 
 export interface Deployment {
@@ -94,6 +95,7 @@ export interface DeleteDeploymentOptions {
 export interface CommandOptions {
   config: string
   minutes: number
+  percentFiring: number
 }
 
 export type CommandHandler = (
