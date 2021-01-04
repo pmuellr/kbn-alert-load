@@ -34,6 +34,7 @@ export interface Deployment {
   readonly zone: string
   readonly esUrl: string
   readonly kbUrl: string
+  readonly kbInstances: number
   readonly scenario: Scenario
 
   delete(): Promise<void>
@@ -49,6 +50,7 @@ export interface DeploymentCtorOptions {
   status: string
   esUrl: string
   kbUrl: string
+  kbInstances: number
   scenario: Scenario
 }
 
@@ -111,6 +113,29 @@ export interface EventLogRecord {
   outcome: string
   alert?: string
   action?: string
+}
+
+export interface TaskManagerStats {
+	id: string;
+	timestamp:  string;
+  scenario: string;
+  stats: {
+    runtime: {
+      value: {
+        drift: {
+					"p50": number;
+					"p90": number;
+					"p95": number;
+					"p99": number;
+        }
+      }
+    };
+    workload: {
+      value: {
+        estimated_schedule_density: number[];
+      }
+    }
+  }
 }
 
 export type UnwrapPromise<T> = T extends Promise<infer U> ? U : T
