@@ -120,6 +120,12 @@ export interface TaskManagerStats {
 	timestamp:  string;
   scenario: string;
   stats: {
+		configuration: {
+			value: {
+				poll_interval: number;
+				max_workers: number;
+			}
+		};
     runtime: {
       value: {
         drift: {
