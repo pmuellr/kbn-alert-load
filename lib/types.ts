@@ -133,7 +133,29 @@ export interface TaskManagerStats {
 					"p90": number;
 					"p95": number;
 					"p99": number;
-        }
+        },
+        polling: {
+          result_frequency_percent_as_number: {
+            NoTasksClaimed: number;
+            RanOutOfCapacity: number;
+            PoolFilled: number;
+          }
+        },
+        execution: {
+          duration: {
+            "alerting:.index-threshold"?: {
+              "p50": number;
+              "p90": number;
+            }
+          },
+          "result_frequency_percent_as_number": {
+            "alerting:.index-threshold"?: {
+              "Success": number;
+              "RetryScheduled": number;
+              "Failed": number;
+            }
+          }
+        },
       }
     };
     workload: {
