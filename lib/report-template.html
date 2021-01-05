@@ -303,21 +303,27 @@
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
     title: 'kibana Task Manager metrics',
     datasets: flattenedTMStats,
-    hconcat: Object.keys(flattenedTMStats)
-      .map(scenario => tmMetricSpec(`Drift (p90) ${scenario}`, 'stats.runtime.value.drift.p90', scenario))
+    hconcat: [
+      ...Object.keys(flattenedTMStats)
+        .map(scenario => tmMetricSpec(`Drift (p50) ${scenario}`, 'stats.runtime.value.drift.p50', scenario)),
+      ...Object.keys(flattenedTMStats)
+        .map(scenario => tmMetricSpec(`Drift (p90) ${scenario}`, 'stats.runtime.value.drift.p90', scenario))
+    ]
   })
    
   // reduce to one TM for schedule density 
   const flattenedTMScheduleDensity = Object.entries(KbTaskManager)
     .reduce((scenarios, [scenario, stats]) => {
       // choose one TM and reduce to its schedule density stat
-      scenarios[scenario] = Object.values(stats)[0].reduce((allDensities, stat, statCycle) => {
+      const allTaskManagers = Object.values(stats);
+      scenarios[scenario] = allTaskManagers[0].reduce((allDensities, stat, statCycle) => {
         allDensities.push(
           ...stat.stats.workload.value.estimated_schedule_density
             .map((scheduled, cycle) => ({
               scheduled,
               schedule: stat.pollingCycle + cycle,
-              measuredAt: stat.dateRelative / 1000
+              availableWorkers: stat.stats.configuration.value.max_workers * allTaskManagers.length,
+              measuredAt: parseInt(stat.dateRelative / 1000)
             }))
         )
         return allDensities
@@ -349,7 +355,10 @@
         },
         color: {
           field: "scheduled",
-          aggregate: "sum",
+          condition: {
+            "test": `datum['scheduled'] > datum['availableWorkers']`,
+            "value": "red"
+          },
           type: "quantitative",
         }
       }
