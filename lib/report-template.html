@@ -119,7 +119,6 @@
           stats.dateNumber = Date.parse(stats.timestamp)
           stats.dateRelative = stats.dateNumber - earliestTMDateInScenario
           stats.minute = stats.dateRelative / 1000 / 60
-          stats.pollingCycle = Math.round(stats.dateRelative / pollInterval)
         })
       })
     })
@@ -355,14 +354,31 @@
     .reduce((scenarios, [scenario, stats]) => {
       // choose one TM and reduce to its schedule density stat
       const allTaskManagers = Object.values(stats);
-      scenarios[scenario] = allTaskManagers[0].reduce((allDensities, stat, statCycle) => {
+      const randomTaskManager = allTaskManagers[0];
+      const earliestTMScheduleDensityInScenario = Date.parse(randomTaskManager[0].stats.workload.timestamp)
+
+      const measuredTimestamps = new Set()
+
+      scenarios[scenario] = randomTaskManager.reduce((allDensities, stat, statCycle) => {
+        //skip duplicate measurments
+        if(measuredTimestamps.has(stat.stats.workload.timestamp)){
+          return allDensities
+        }
+        measuredTimestamps.add(stat.stats.workload.timestamp)
+
+        const pollInterval = stat.stats.configuration.value.poll_interval
+        const taskManagmentStatsTakenAt = Date.parse(stat.stats.workload.timestamp)
+        // rounmd measuredAt relative to the previous TM measurments so that they all fall in the same bucket
+        const measuredAt = taskManagmentStatsTakenAt -
+          ((taskManagmentStatsTakenAt - earliestTMScheduleDensityInScenario) % pollInterval)
+
         allDensities.push(
           ...stat.stats.workload.value.estimated_schedule_density
             .map((scheduled, cycle) => ({
               scheduled,
-              schedule: stat.pollingCycle + cycle,
               availableWorkers: stat.stats.configuration.value.max_workers * allTaskManagers.length,
-              measuredAt: parseInt(stat.dateRelative / 1000)
+              scheduledAt: measuredAt + cycle * pollInterval,
+              measuredAt
             }))
         )
         return allDensities
@@ -384,12 +400,15 @@
       mark: "rect",
       encoding: {
         x: {
-          field: "schedule",
-          title: "Polling Cycle"
+          field: "scheduledAt",
+          title: "Scheduled At",
+          // "timeUnit": {
+          //   "unit": "milliseconds",
+          //   "step": 3000
+          // }
         },
         y: {
           field: "measuredAt",
-          type: "ordinal",
           title: "Measured At"
         },
         color: {

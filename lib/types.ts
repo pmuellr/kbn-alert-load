@@ -159,6 +159,7 @@ export interface TaskManagerStats {
       }
     };
     workload: {
+      timestamp: string;
       value: {
         estimated_schedule_density: number[];
       }
