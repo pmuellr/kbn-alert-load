@@ -1,3 +1,5 @@
+import { SpawnSyncOptionsWithStringEncoding } from "child_process"
+
 export interface Scenario {
   name: string
   sortName?: string
@@ -135,6 +137,7 @@ export interface TaskManagerStats {
 					"p99": number;
         },
         polling: {
+          last_successful_poll: string;
           result_frequency_percent_as_number: {
             NoTasksClaimed: number;
             RanOutOfCapacity: number;
