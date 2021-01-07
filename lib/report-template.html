@@ -399,32 +399,43 @@
     $schema: 'https://vega.github.io/schema/vega-lite/v4.json',
     title: 'kibana Task Manager Polling  Timeline',
     datasets: calculatedPollingTimeline,
-    hconcat: Object.keys(calculatedPollingTimeline)
-        .map(scenario => {
-          return {
-            "title": scenario,
-            "data": { "name": scenario },
-            "mark": "tick",
-            "encoding": {
-              "x": {
-                field: "pollTimestamp",
-                type: 'temporal',
-                axis: {
-                  format: '%M:%S',
-                  formatType: 'time',
-                }
-              },
-              "y": {
-                field: "id",
-                type: "ordinal"
-              },
-              "color": {
-                field: "type",
-                type: "nominal"
-              }
-            }
-          }
-        })
+    vconcat: Object.entries(calculatedPollingTimeline)
+        .reduce((allCharts, [scenario, scenarioStats]) => {
+          
+          const firstPollTimestamp = scenarioStats[0].pollTimestamp
+          const lastPollTimestamp = scenarioStats[scenarioStats.length - 1].pollTimestamp
+          const midPointOfTest = Math.round((lastPollTimestamp - firstPollTimestamp) / 2)
+
+          // clip values outside of the 1 minute in the middle
+          const twoMinutesInTheMiddle = [
+            Math.max(firstPollTimestamp, midPointOfTest - 30 * 1000),
+            Math.min(midPointOfTest + 30 * 1000, lastPollTimestamp),
+          ]
+
+          // show wholew timeline
+          allCharts.push(
+            tmMetricPollingTimeline(
+              `Whole Timeline of ${scenario}`,
+              scenario,
+              chartWidth * 4,
+              // no range, show all data
+              false,
+              // sort by IDs so that `all` is last
+              Object.keys(KbTaskManager[scenario])
+            )
+          )
+          allCharts.push(
+            tmMetricPollingTimeline(
+              `Zoomed in on ${timestampAsTime(twoMinutesInTheMiddle[0])}-${timestampAsTime(twoMinutesInTheMiddle[1])} in middle of ${scenario}`,
+              scenario,
+              chartWidth * 4,
+              twoMinutesInTheMiddle,
+              // sort by IDs so that `all` is last
+              Object.keys(KbTaskManager[scenario])
+            )
+          )
+          return allCharts
+        }, [])
   })
 
   // reduce to one TM for schedule density 
@@ -547,6 +558,46 @@
     }
   }
 
+  
+  function timestampAsTime(timestamp){
+    return `${new Date(timestamp).getMinutes()}:${new Date(timestamp).getSeconds()}`
+  }
+
+  function tmMetricPollingTimeline(title, data, width, range, tmIDs) {
+    return {
+      title,
+      data: { "name": data },
+      mark: "tick",
+      width,
+      ...(
+        range 
+        ? { transform: [{ filter: { field: "pollTimestamp",range } }] }
+        : {}
+      ),
+      encoding: {
+        x: {
+          field: "pollTimestamp",
+          type: 'temporal',
+          axis: {
+            format: '%M:%S',
+            formatType: 'time',
+            minExtent: 100
+          }
+        },
+        y: {
+          field: "id",
+          type: "ordinal",
+          // sort by IDs so that 'all' in in the middle
+          sort: tmIDs
+        },
+        color: {
+          field: "type",
+          type: "nominal"
+        }
+      }
+    }
+  }
+  
   function tmMetricSpec(title, field, data) {
     return {
       title,
