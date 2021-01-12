@@ -117,6 +117,12 @@ export interface EventLogRecord {
   action?: string
 }
 
+export interface RunningAverageP {
+  "p50": number;
+  "p90": number;
+  "p95": number;
+  "p99": number;
+}
 export interface TaskManagerStats {
 	id: string;
 	timestamp:  string;
@@ -130,14 +136,13 @@ export interface TaskManagerStats {
 		};
     runtime: {
       value: {
-        drift: {
-					"p50": number;
-					"p90": number;
-					"p95": number;
-					"p99": number;
-        },
+        drift: RunningAverageP;
+        load: RunningAverageP;
         polling: {
           last_successful_poll: string;
+          "duration": RunningAverageP;
+          "claim_conflicts": RunningAverageP;
+          "claim_mismatches": RunningAverageP;
           result_frequency_percent_as_number: {
             NoTasksClaimed: number;
             RanOutOfCapacity: number;
@@ -146,10 +151,7 @@ export interface TaskManagerStats {
         },
         execution: {
           duration: {
-            "alerting:.index-threshold"?: {
-              "p50": number;
-              "p90": number;
-            }
+            "alerting:.index-threshold"?: RunningAverageP;
           },
           "result_frequency_percent_as_number": {
             "alerting:.index-threshold"?: {

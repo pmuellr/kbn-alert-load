@@ -323,7 +323,7 @@
     .reduce((scenarios, [scenario, stats]) => {
       scenarios[scenario] = stats.reduce((allRuntimeStats, tmStats) => {
         const { id } = tmStats
-        const { result = {}, polling : { lastSuccessfulPoll, ...polling } = {} } = tmStats.stats.runtime.value
+        const { result = {}, polling : { results: polling } = {} } = tmStats.stats.runtime.value
         Object.entries({ result, polling })
           .forEach(([stat, metrics]) => {
             if(Math.max(...Object.values(metrics)) > 0){
@@ -367,7 +367,7 @@
           const pollInterval = tm[0].stats.configuration.value.poll_interval
           return tm.reduce((allRuntimeStats, tmStats) => {
             const { id } = tmStats
-            const { polling: { lastSuccessfulPoll } = {} } = tmStats.stats.runtime.value
+            const { polling: { lastSuccessfulPoll, duration, claimConflicts } = {} } = tmStats.stats.runtime.value
             if(lastSuccessfulPoll){
               const pollTimestamp = Date.parse(lastSuccessfulPoll) - earliestSuccessfulPollInScenario
               const lastPoll = allRuntimeStats[allRuntimeStats.length - 1]
@@ -378,12 +378,31 @@
                   estimatedPoll < pollTimestamp;
                   estimatedPoll = estimatedPoll + pollInterval
                 ) {
-                  allRuntimeStats.push({ id, pollTimestamp: estimatedPoll, type: 'estimated' })
+                  allRuntimeStats.push({
+                    id,
+                    pollTimestamp: estimatedPoll,
+                    duration: {
+                      p99: estimatedPoll - duration.p99,
+                      p95: estimatedPoll - duration.p95,
+                      p50: estimatedPoll - duration.p50,
+                    },
+                    type: 'estimated'
+                  })
                   allRuntimeStats.push({ id: 'all', pollTimestamp: estimatedPoll, type: 'estimated' })
                 }
               }
 
-              allRuntimeStats.push({ id, pollTimestamp, type: 'measured' })
+              allRuntimeStats.push({
+                id,
+                pollTimestamp,
+                duration: {
+                  p99: pollTimestamp - duration.p99,
+                  p95: pollTimestamp - duration.p95,
+                  p50: pollTimestamp - duration.p50,
+                },
+                claimConflicts,
+                type: 'measured'
+              })
               allRuntimeStats.push({ id: 'all', pollTimestamp, type: 'measured' })
             }
             return allRuntimeStats
@@ -402,15 +421,15 @@
     datasets: calculatedPollingTimeline,
     vconcat: Object.entries(calculatedPollingTimeline)
         .reduce((allCharts, [scenario, scenarioStats]) => {
+          const pollInterval = 3000
           
           const firstPollTimestamp = scenarioStats[0].pollTimestamp
           const lastPollTimestamp = scenarioStats[scenarioStats.length - 1].pollTimestamp
-          const midPointOfTest = Math.round((lastPollTimestamp - firstPollTimestamp) / 2)
 
-          // clip values outside of the 1 minute in the middle
-          const twoMinutesInTheMiddle = [
-            Math.max(firstPollTimestamp, midPointOfTest - 30 * 1000),
-            Math.min(midPointOfTest + 30 * 1000, lastPollTimestamp),
+          const midPointOfTest = Math.round((lastPollTimestamp - firstPollTimestamp) / 2)
+          const twoPollingCyclesInTheMiddle = [
+            midPointOfTest - pollInterval,
+            midPointOfTest + pollInterval
           ]
 
           // show wholew timeline
@@ -419,22 +438,133 @@
               `Whole Timeline of ${scenario}`,
               scenario,
               chartWidth * 4,
-              // no range, show all data
-              false,
+              "brush",
               // sort by IDs so that `all` is last
               Object.keys(KbTaskManager[scenario])
             )
           )
           allCharts.push(
             tmMetricPollingTimeline(
-              `Zoomed in on ${timestampAsTime(twoMinutesInTheMiddle[0])}-${timestampAsTime(twoMinutesInTheMiddle[1])} in middle of ${scenario}`,
+              `Zoom Into Timeline of ${scenario}`,
               scenario,
               chartWidth * 4,
-              twoMinutesInTheMiddle,
-              // sort by IDs so that `all` is last
-              Object.keys(KbTaskManager[scenario])
+              { "brush": { "type": "interval", "encodings": ["x"]} }
             )
           )
+          allCharts.push({
+            "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+            title: `Sampled Polling Overlap of ${scenario}`,
+            data: { "name": scenario },
+            width: chartWidth * 2,
+            "encoding": {
+                "y": {
+                  "field": "id",
+                  "type": "nominal",
+                  "title": null
+                }
+            },
+            transform: [
+              { filter: { field: "pollTimestamp", range: twoPollingCyclesInTheMiddle } },
+              { filter: { field: "id", oneOf: Object.keys(KbTaskManager[scenario]) } }
+            ],
+            "layer": [
+              {
+                "mark": {"type": "rule"},
+                "encoding": {
+                  "x": {
+                    "field": "duration.p99",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    },
+                    "scale": {"zero": false},
+                    "title": null
+                  },
+                  "x2": {
+                    "field": "pollTimestamp",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    }
+                  }
+                }
+              },
+              {
+                "mark": {"type": "bar", "size": 14},
+                "encoding": {
+                  "x": {
+                    "field": "duration.p95",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    }
+                  },
+                  "x2": {
+                    "field": "pollTimestamp",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    }
+                  },
+                  "color": {"field": "id", "type": "nominal", "legend": null}
+                }
+              }
+            ]
+          })
+          allCharts.push({
+            "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+            title: `Claim Conflicts p50 of ${scenario}`,
+            data: { "name": scenario },
+            transform: [
+              { filter: { field: "type", equal: 'measured' } },
+              { filter: { field: "id", oneOf: Object.keys(KbTaskManager[scenario]) } }
+            ],
+            width: chartWidth * 4,
+            mark: {
+              "type": "circle",
+              "opacity": 0.8,
+              "stroke": "black",
+              "strokeWidth": 1
+            },
+            encoding: {
+              x: {
+                field: "pollTimestamp",
+                type: 'temporal',
+                axis: {
+                  format: '%M:%S',
+                  formatType: 'time',
+                  minExtent: 100
+                }
+              },
+              y: {
+                "field": "id",
+                "type": "nominal",
+                "axis": {
+                  title: ""
+                }
+              },
+              size: {
+                "field": "claimConflicts.p50",
+                "type": "quantitative",
+                "title": "Claim Conflicts p50",
+                "legend": { clipHeight: 30 },
+                "scale": { rangeMax: 5000 }
+              },
+              color: {
+                "field": "id",
+                "type": "nominal",
+                "legend": null
+              }
+            }
+          })
           return allCharts
         }, [])
   })
@@ -564,36 +694,54 @@
     return `${new Date(timestamp).getMinutes()}:${new Date(timestamp).getSeconds()}`
   }
 
-  function tmMetricPollingTimeline(title, data, width, range, tmIDs) {
+  function tmMetricPollingTimeline(title, data, width, selection, tmIDs) {
     return {
       title,
       data: { "name": data },
       mark: "tick",
       width,
       ...(
-        range 
-        ? { transform: [{ filter: { field: "pollTimestamp",range } }] }
+        typeof selection === 'object'
+        ? {
+            selection,
+            transform: [
+              { filter: { field: "id", equal: 'all' } },
+              { filter: { field: "type", equal: 'measured' } }
+            ] 
+          }
         : {}
       ),
       encoding: {
         x: {
           field: "pollTimestamp",
           type: 'temporal',
+          ...(
+            typeof selection === 'string'
+            ? { scale: { domain: { selection }}, }
+            : {}
+          ),
           axis: {
             format: '%M:%S',
             formatType: 'time',
-            minExtent: 100
           }
         },
         y: {
           field: "id",
           type: "ordinal",
-          // sort by IDs so that 'all' in in the middle
-          sort: tmIDs
+          ...(
+            tmIDs
+            // sort by IDs so that 'all' in in the middle
+            ? { sort: tmIDs }
+            : {}
+          ),
+          
         },
         color: {
           field: "type",
-          type: "nominal"
+          type: "nominal",
+          legend: {
+            values: ["estimated", "measured"]
+          }
         }
       }
     }
@@ -608,6 +756,11 @@
         type: 'line', 
         opacity: 0.6,
         tooltip: true
+      },
+      "selection": {
+        "taskManagerID": {
+          "type": "multi", "fields": ["id"], "bind": "legend"
+        }
       },
       encoding: {
         x: {
@@ -627,6 +780,13 @@
         color: {
           "field": "id",
           "type": "nominal"
+        },
+        "opacity": {
+          "condition": {
+            "selection": "taskManagerID",
+            "value": 1
+          },
+          "value": 0.2
         }
       }
     }
@@ -657,6 +817,11 @@
           "as": "percentOfTotal"
         }
       ],
+      "selection": {
+        "result": {
+          "type": "multi", "fields": ["category"], "bind": "legend"
+        }
+      },
       encoding: {
         x: {
           field: `percentOfTotal`,
@@ -668,6 +833,13 @@
         },
         color: {
           "field": `category`
+        },
+        "opacity": {
+          "condition": {
+            "selection": "result",
+            "value": 1
+          },
+          "value": 0.2
         }
       },
       resolve: {
