@@ -140,9 +140,10 @@ export interface TaskManagerStats {
         load: RunningAverageP;
         polling: {
           last_successful_poll: string;
-          "duration": RunningAverageP;
-          "claim_conflicts": RunningAverageP;
-          "claim_mismatches": RunningAverageP;
+          last_polling_delay: string;
+          duration: RunningAverageP;
+          claim_conflicts: RunningAverageP;
+          claim_mismatches: RunningAverageP;
           result_frequency_percent_as_number: {
             NoTasksClaimed: number;
             RanOutOfCapacity: number;
@@ -153,11 +154,11 @@ export interface TaskManagerStats {
           duration: {
             "alerting:.index-threshold"?: RunningAverageP;
           },
-          "result_frequency_percent_as_number": {
+          result_frequency_percent_as_number: {
             "alerting:.index-threshold"?: {
-              "Success": number;
-              "RetryScheduled": number;
-              "Failed": number;
+              Success: number;
+              RetryScheduled: number;
+              Failed: number;
             }
           }
         },
