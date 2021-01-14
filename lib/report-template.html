@@ -365,10 +365,11 @@
         // for each TM mark the successful polls and estimate the ones inbetween measurments
         .map((tm) => {
           const pollInterval = tm[0].stats.configuration.value.poll_interval
+          let previousLastPollingDelay = 0
           return tm.reduce((allRuntimeStats, tmStats) => {
             const { id } = tmStats
-            const { polling: { lastSuccessfulPoll, duration, claimConflicts } = {} } = tmStats.stats.runtime.value
-            if(lastSuccessfulPoll){
+            const { polling: { lastSuccessfulPoll, lastPollingDelay, duration, claimConflicts } = {} } = tmStats.stats.runtime.value
+            if(lastSuccessfulPoll && duration){
               const pollTimestamp = Date.parse(lastSuccessfulPoll) - earliestSuccessfulPollInScenario
               const lastPoll = allRuntimeStats[allRuntimeStats.length - 1]
               if(lastPoll) {
@@ -392,9 +393,18 @@
                 }
               }
 
+              const pollDelayTimestamp = Date.parse(lastPollingDelay) - earliestSuccessfulPollInScenario
+              const pollDelayChanged = pollDelayTimestamp > 0 &&
+                previousLastPollingDelay !== lastPollingDelay
+
+              if(pollDelayChanged) {
+                previousLastPollingDelay = lastPollingDelay
+              }
+
               allRuntimeStats.push({
                 id,
                 pollTimestamp,
+                pollDelayChanged,
                 duration: {
                   p99: pollTimestamp - duration.p99,
                   p95: pollTimestamp - duration.p95,
@@ -523,47 +533,87 @@
             "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
             title: `Claim Conflicts p50 of ${scenario}`,
             data: { "name": scenario },
-            transform: [
-              { filter: { field: "type", equal: 'measured' } },
-              { filter: { field: "id", oneOf: Object.keys(KbTaskManager[scenario]) } }
-            ],
             width: chartWidth * 4,
-            mark: {
-              "type": "circle",
-              "opacity": 0.8,
-              "stroke": "black",
-              "strokeWidth": 1
-            },
-            encoding: {
-              x: {
-                field: "pollTimestamp",
-                type: 'temporal',
-                axis: {
-                  format: '%M:%S',
-                  formatType: 'time',
-                  minExtent: 100
+            layer: [
+            {
+                transform: [
+                  { filter: { field: "type", equal: 'measured' } },
+                  { filter: { field: "id", oneOf: Object.keys(KbTaskManager[scenario]) } }
+                ],
+                mark: {
+                  "type": "circle",
+                  "opacity": 0.8,
+                  "stroke": "black",
+                  "strokeWidth": 1
+                },
+                encoding: {
+                  x: {
+                    field: "pollTimestamp",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    }
+                  },
+                  y: {
+                    "field": "id",
+                    "type": "nominal",
+                    "axis": {
+                      title: ""
+                    }
+                  },
+                  size: {
+                    "field": "claimConflicts.p50",
+                    "type": "quantitative",
+                    "title": "Claim Conflicts p50",
+                    "legend": { clipHeight: 30 },                
+                    "scale": {
+                      "domainMin": 0,
+                      "domainMax": 10,
+                      "rangeMin": 0,
+                      "rangeMax": 5000
+                    }
+                  },
+                  color: {
+                    "field": "id",
+                    "type": "nominal",
+                    "legend": null
+                  }
                 }
-              },
-              y: {
-                "field": "id",
-                "type": "nominal",
-                "axis": {
-                  title: ""
+              }, {
+                transform: [
+                  { filter: { field: "pollDelayChanged", equal: true } },
+                  { filter: { field: "id", oneOf: Object.keys(KbTaskManager[scenario]) } }
+                ],
+                mark: {
+                  type: "point",
+                  shape: "wedge",
+                  angle: 90,
+                  filled: false,
+                  stroke: "#fff",
+                  size: 1000
+                },
+                encoding: {
+                  x: {
+                    field: "pollTimestamp",
+                    type: 'temporal',
+                    axis: {
+                      format: '%M:%S',
+                      formatType: 'time',
+                      minExtent: 100
+                    }
+                  },
+                  y: {
+                    "field": "id",
+                    "type": "nominal",
+                    "axis": {
+                      title: ""
+                    }
+                  }
                 }
-              },
-              size: {
-                "field": "claimConflicts.p50",
-                "type": "quantitative",
-                "title": "Claim Conflicts p50",
-                "legend": { clipHeight: 30 },
-                "scale": { rangeMax: 5000 }
-              },
-              color: {
-                "field": "id",
-                "type": "nominal",
-                "legend": null
-              }
-            }
+              }              
+            ]            
           })
           return allCharts
         }, [])
