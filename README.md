@@ -29,6 +29,13 @@ TBD; run `kbn-alert-load` with no parameters for help.
 
 ## change log
 
+#### 2.1.0 - 2021-07-14
+
+- updated to work with the latest ecctl v1.4.0
+- changed RAM size calculation to match closest available values per region
+- various other small updates
+- pull request: https://github.com/pmuellr/kbn-alert-load/pull/5
+
 #### 1.x.x - ????-??-??
 
 - add lsd, rmd, and rmdall commands

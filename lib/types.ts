@@ -1,5 +1,3 @@
-import { SpawnSyncOptionsWithStringEncoding } from "child_process"
-
 export interface Scenario {
   name: string
   sortName?: string
@@ -90,10 +88,55 @@ export interface GetDeploymentResult {
   kbPort: number
 }
 
+export interface GetDeploymentTemplateOptions {
+  config: string
+  id: string
+}
+
+export interface GetDeploymentTemplateResult {
+  instance_configurations: {
+    id: string
+    discrete_sizes: {
+      sizes: number[]
+    }
+  }[]
+}
+
 export interface DeleteDeploymentOptions {
   config: string
   name: string
   id: string
+}
+
+interface DeploymentCreatePlan {
+  cluster_topology: {
+    id: string
+    instance_configuration_id: string
+    size: {
+      resource: string
+      value: number
+    }
+  }[]
+  deployment_template?: {
+    id: string
+  }
+  kibana?: {
+    user_settings_override_json?: Record<string, number>
+  }
+}
+
+export interface DeploymentCreatePayload {
+  resources: {
+    apm: never
+    appsearch: never
+    enterprise_search: never
+    elasticsearch: {
+      plan: DeploymentCreatePlan,
+    }[]
+    kibana: {
+      plan: DeploymentCreatePlan,
+    }[]
+  }
 }
 
 export interface CommandOptions {

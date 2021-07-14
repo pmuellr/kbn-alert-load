@@ -4,9 +4,12 @@
 /** @typedef { import('./lib/types').Scenario } Scenario */
 
 const Versions = [
-  // '7.11.0-SNAPSHOT', unstable
-  '7.10.0',
-  '7.9.3',
+  // '7.14.0',
+  '7.13.3',
+  '7.12.1',
+  '7.11.2',
+  // '7.10.2',
+  // '7.9.3',
   // '7.8.1', old api version?
 ]
 const Version = Versions[0]
@@ -30,10 +33,10 @@ function withAlerts(fn) {
 /** @type { (alerts: number) => Suite } */
 function suiteKibanaSizes(alerts) {
   const sizes = [
-    { esSpec: '1 x 1 GB', kbSpec: '1 x 1 GB' },
-    { esSpec: '1 x 4 GB', kbSpec: '2 x 8 GB' },
-    { esSpec: '1 x 8 GB', kbSpec: '4 x 8 GB' },
-    { esSpec: '1 x 15 GB', kbSpec: '8 x 8 GB' },
+    { esSpec: '1 x  8 GB', kbSpec: ' 4 x 8 GB' },
+    { esSpec: '1 x 16 GB', kbSpec: ' 6 x 8 GB' },
+    { esSpec: '1 x 32 GB', kbSpec: ' 8 x 8 GB' },
+    { esSpec: '1 x 64 GB', kbSpec: '10 x 8 GB' },
   ]
 
   const scenarios = sizes.map((size, index) => ({
