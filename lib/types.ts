@@ -121,7 +121,7 @@ interface DeploymentCreatePlan {
     id: string
   }
   kibana?: {
-    user_settings_override_json?: Record<string, number>
+    user_settings_yaml?: string
   }
 }
 

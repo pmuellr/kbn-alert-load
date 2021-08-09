@@ -3,8 +3,10 @@
 /** @typedef { import('./lib/types').Suite } Suite */
 /** @typedef { import('./lib/types').Scenario } Scenario */
 
+const AlertInterval = '5s'
+
 const Versions = [
-  // '7.14.0',
+  '7.14.0',
   '7.13.3',
   '7.12.1',
   '7.11.2',
@@ -14,7 +16,7 @@ const Versions = [
 ]
 const Version = Versions[0]
 
-const AlertsList = [100, 500, 1000, 2000, 4000]
+const AlertsList = [10, 50, 100, 200, 400]
 
 /** @type { Suite[] } */
 const suites = module.exports = []
@@ -41,7 +43,7 @@ function suiteKibanaSizes(alerts) {
 
   const scenarios = sizes.map((size, index) => ({
     name: `kb: ${size.kbSpec}; es: ${size.esSpec}`,
-    alertInterval: '1m',
+    alertInterval: AlertInterval,
     alerts,
     esSpec: size.esSpec,
     kbSpec: size.kbSpec,
@@ -64,7 +66,7 @@ function suiteTmMaxWorkers(alerts) {
   const scenarios = tmMaxWorkersList.map((tmMaxWorkers, index) => {
     return {
       name: `tm max workers: ${tmMaxWorkers}`,
-      alertInterval: '1m',
+      alertInterval: AlertInterval,
       alerts,
       esSpec: '1 x 8 GB',
       kbSpec: '2 x 8 GB',
@@ -88,7 +90,7 @@ function suiteTmPollInterval(alerts) {
   const scenarios = tmPollIntervalList.map((tmPollInterval, index) => {
     return {
       name: `tm poll interval: ${tmPollInterval}`,
-      alertInterval: '1m',
+      alertInterval: AlertInterval,
       alerts,
       esSpec: '1 x 8 GB',
       kbSpec: '2 x 8 GB',
@@ -110,7 +112,7 @@ function suiteVersions(alerts) {
   const scenarios = Versions.map((version, index) => {
     return {
       name: `stack version: ${version}`,
-      alertInterval: '1m',
+      alertInterval: AlertInterval,
       alerts,
       esSpec: '1 x 8 GB',
       kbSpec: '2 x 8 GB',
@@ -132,7 +134,7 @@ function suiteAlerts() {
   const scenarios = AlertsList.slice(0, 4).map((alerts, index) => {
     return {
       name: `alerts: ${alerts}`,
-      alertInterval: '1m',
+      alertInterval: AlertInterval,
       alerts,
       esSpec: '1 x 8 GB',
       kbSpec: '2 x 8 GB',
