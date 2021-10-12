@@ -8,6 +8,7 @@ export interface Scenario {
   alertInterval: string
   tmPollInterval: number
   tmMaxWorkers: number
+  template?: string 
 }
 
 export interface Suite {
@@ -20,6 +21,7 @@ export interface CliArguments {
   command: string
   commandArgs: string[]
   config: string
+  template: string | null
   minutes: number
   percentFiring: number
 }
@@ -56,6 +58,7 @@ export interface DeploymentCtorOptions {
 
 export interface CreateDeploymentOptions {
   config: string
+  template: string | null
   stack: string
   name: string
   deploymentName: string
@@ -141,6 +144,7 @@ export interface DeploymentCreatePayload {
 
 export interface CommandOptions {
   config: string
+  template?: string | null
   minutes: number
   percentFiring: number
 }
@@ -158,6 +162,7 @@ export interface EventLogRecord {
   outcome: string
   alert?: string
   action?: string
+  drift?: number
 }
 
 export interface RunningAverageP {

@@ -1,0 +1,554 @@
+{
+  "deployment_template": {
+    "resources": {
+      "apm": [
+        {
+          "elasticsearch_cluster_ref_id": "es-ref-id",
+          "plan": {
+            "apm": {},
+            "cluster_topology": [
+              {
+                "instance_configuration_id": "aws.apm.c5d",
+                "size": {
+                  "resource": "memory",
+                  "value": 1024
+                },
+                "zone_count": 1
+              }
+            ]
+          },
+          "ref_id": "apm-ref-id",
+          "region": "us-east-1"
+        }
+      ],
+      "appsearch": null,
+      "elasticsearch": [
+        {
+          "plan": {
+            "autoscaling_enabled": false,
+            "cluster_topology": [
+              {
+                "autoscaling_max": {
+                  "resource": "memory",
+                  "value": 122880
+                },
+                "elasticsearch": {
+                  "node_attributes": {
+                    "data": "hot"
+                  }
+                },
+                "id": "hot_content",
+                "instance_configuration_id": "aws.es.datahot.m5d",
+                "node_roles": [
+                  "master",
+                  "ingest",
+                  "transform",
+                  "data_hot",
+                  "remote_cluster_client",
+                  "data_content"
+                ],
+                "node_type": {
+                  "data": true,
+                  "ingest": true,
+                  "master": true
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 8192
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 1024
+                  }
+                },
+                "zone_count": 2
+              },
+              {
+                "autoscaling_max": {
+                  "resource": "memory",
+                  "value": 122880
+                },
+                "elasticsearch": {
+                  "node_attributes": {
+                    "data": "warm"
+                  }
+                },
+                "id": "warm",
+                "instance_configuration_id": "aws.es.datawarm.d3",
+                "node_roles": [
+                  "data_warm",
+                  "remote_cluster_client"
+                ],
+                "node_type": {
+                  "data": true,
+                  "ingest": false,
+                  "master": false
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 2
+              },
+              {
+                "autoscaling_max": {
+                  "resource": "memory",
+                  "value": 61440
+                },
+                "elasticsearch": {
+                  "node_attributes": {
+                    "data": "cold"
+                  }
+                },
+                "id": "cold",
+                "instance_configuration_id": "aws.es.datacold.d3",
+                "node_roles": [
+                  "data_cold",
+                  "remote_cluster_client"
+                ],
+                "node_type": {
+                  "data": true,
+                  "ingest": false,
+                  "master": false
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 1
+              },
+              {
+                "autoscaling_max": {
+                  "resource": "memory",
+                  "value": 122880
+                },
+                "elasticsearch": {
+                  "node_attributes": {
+                    "data": "frozen"
+                  }
+                },
+                "id": "frozen",
+                "instance_configuration_id": "aws.es.datafrozen.i3en",
+                "node_roles": [
+                  "data_frozen"
+                ],
+                "node_type": {
+                  "data": true,
+                  "ingest": false,
+                  "master": false
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 1
+              },
+              {
+                "id": "master",
+                "instance_configuration_id": "aws.es.master.c5d",
+                "node_roles": [
+                  "master",
+                  "remote_cluster_client"
+                ],
+                "node_type": {
+                  "data": false,
+                  "ingest": false,
+                  "master": true
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 3
+              },
+              {
+                "id": "coordinating",
+                "instance_configuration_id": "aws.es.coordinating.m5d",
+                "node_roles": [
+                  "ingest",
+                  "remote_cluster_client"
+                ],
+                "node_type": {
+                  "data": false,
+                  "ingest": true,
+                  "master": false
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 2
+              },
+              {
+                "autoscaling_max": {
+                  "resource": "memory",
+                  "value": 61440
+                },
+                "autoscaling_min": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "id": "ml",
+                "instance_configuration_id": "aws.es.ml.m5d",
+                "node_roles": [
+                  "ml",
+                  "remote_cluster_client"
+                ],
+                "node_type": {
+                  "data": false,
+                  "ingest": false,
+                  "master": false,
+                  "ml": true
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 0
+                },
+                "topology_element_control": {
+                  "min": {
+                    "resource": "memory",
+                    "value": 0
+                  }
+                },
+                "zone_count": 1
+              }
+            ],
+            "elasticsearch": {}
+          },
+          "ref_id": "es-ref-id",
+          "region": "us-east-1",
+          "settings": {
+            "dedicated_masters_threshold": 6
+          }
+        }
+      ],
+      "enterprise_search": [
+        {
+          "elasticsearch_cluster_ref_id": "es-ref-id",
+          "plan": {
+            "cluster_topology": [
+              {
+                "instance_configuration_id": "aws.enterprisesearch.c5d",
+                "node_type": {
+                  "appserver": true,
+                  "connector": true,
+                  "worker": true
+                },
+                "size": {
+                  "resource": "memory",
+                  "value": 2048
+                },
+                "zone_count": 1
+              }
+            ],
+            "enterprise_search": {}
+          },
+          "ref_id": "enterprise_search-ref-id",
+          "region": "us-east-1"
+        }
+      ],
+      "kibana": [
+        {
+          "elasticsearch_cluster_ref_id": "es-ref-id",
+          "plan": {
+            "cluster_topology": [
+              {
+                "instance_configuration_id": "aws.kibana.c5d",
+                "size": {
+                  "resource": "memory",
+                  "value": 1024
+                },
+                "zone_count": 1
+              }
+            ],
+            "kibana": {}
+          },
+          "ref_id": "kibana-ref-id",
+          "region": "us-east-1"
+        }
+      ]
+    }
+  },
+  "description": "Suitable for ingestion use cases with a 5-7 days of data available for fast access. Also good for search workloads with less-frequent indexing and medium to high querying loads. Provides a balance of storage, memory, and CPU.",
+  "id": "aws-general-purpose",
+  "instance_configurations": [
+    {
+      "cpu_multiplier": 0.267,
+      "description": "General purpose Elasticsearch instances for hot data. Based on AWS's m5d family.",
+      "discrete_sizes": {
+        "default_size": 4096,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192,
+          15360,
+          30720,
+          61440
+        ]
+      },
+      "id": "aws.es.datahot.m5d",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.datahot.m5d",
+      "node_types": [
+        "master",
+        "data",
+        "ingest"
+      ],
+      "storage_multiplier": 10
+    },
+    {
+      "cpu_multiplier": 0.133,
+      "description": "Storage-optimized (dense HDD) Elasticsearch instances for warm data. Based on AWS's d3 family.",
+      "discrete_sizes": {
+        "default_size": 4096,
+        "resource": "memory",
+        "sizes": [
+          2048,
+          4096,
+          8192,
+          15360,
+          30720,
+          61440
+        ]
+      },
+      "id": "aws.es.datawarm.d3",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.datawarm.d3",
+      "node_types": [
+        "data"
+      ],
+      "storage_multiplier": 190
+    },
+    {
+      "cpu_multiplier": 0.133,
+      "description": "Storage-optimized (dense HDD) Elasticsearch instances for cold data. Based on AWS's d3 family.",
+      "discrete_sizes": {
+        "default_size": 4096,
+        "resource": "memory",
+        "sizes": [
+          2048,
+          4096,
+          8192,
+          15360,
+          30720,
+          61440
+        ]
+      },
+      "id": "aws.es.datacold.d3",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.datacold.d3",
+      "node_types": [
+        "data"
+      ],
+      "storage_multiplier": 190
+    },
+    {
+      "cpu_multiplier": 0.133,
+      "description": "Storage-optimized (dense) Elasticsearch instances serving as a cache tier for frozen data. Based on AWS's i3en family.",
+      "discrete_sizes": {
+        "default_size": 4096,
+        "resource": "memory",
+        "sizes": [
+          4096,
+          8192,
+          15360,
+          30720,
+          61440
+        ]
+      },
+      "id": "aws.es.datafrozen.i3en",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.datafrozen.i3en",
+      "node_types": [
+        "data"
+      ],
+      "storage_multiplier": 80
+    },
+    {
+      "cpu_multiplier": 0.529,
+      "description": "CPU-optimized Elasticsearch instances serving as master-eligible nodes. Based on AWS's c5d family.",
+      "discrete_sizes": {
+        "default_size": 1024,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192,
+          17408
+        ]
+      },
+      "id": "aws.es.master.c5d",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.master.c5d",
+      "node_types": [
+        "master"
+      ],
+      "storage_multiplier": 12
+    },
+    {
+      "cpu_multiplier": 0.267,
+      "description": "General purpose Elasticsearch instance serving as a coordinating node. Based on AWS's m5d family.",
+      "discrete_sizes": {
+        "default_size": 1024,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192,
+          15360
+        ]
+      },
+      "id": "aws.es.coordinating.m5d",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.coordinating.m5d",
+      "node_types": [
+        "ingest"
+      ],
+      "storage_multiplier": 10
+    },
+    {
+      "cpu_multiplier": 0.267,
+      "description": "General purpose Elasticsearch instance serving as ML nodes. Based on AWS's m5d family.",
+      "discrete_sizes": {
+        "default_size": 1024,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192,
+          15360,
+          30720,
+          61440
+        ]
+      },
+      "id": "aws.es.ml.m5d",
+      "instance_type": "elasticsearch",
+      "name": "aws.es.ml.m5d",
+      "node_types": [
+        "ml"
+      ],
+      "storage_multiplier": 10
+    },
+    {
+      "cpu_multiplier": 0.529,
+      "description": "CPU-optimized instances serving as Kibana nodes. Based on AWS's c5d family.",
+      "discrete_sizes": {
+        "default_size": 1024,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192
+        ]
+      },
+      "id": "aws.kibana.c5d",
+      "instance_type": "kibana",
+      "name": "aws.kibana.c5d",
+      "node_types": null,
+      "storage_multiplier": 12
+    },
+    {
+      "cpu_multiplier": 0.529,
+      "description": "CPU-optimized instances serving as APM nodes. Based on AWS's c5d family.",
+      "discrete_sizes": {
+        "default_size": 1024,
+        "resource": "memory",
+        "sizes": [
+          1024,
+          2048,
+          4096,
+          8192
+        ]
+      },
+      "id": "aws.apm.c5d",
+      "instance_type": "apm",
+      "name": "aws.apm.c5d",
+      "node_types": null,
+      "storage_multiplier": 12
+    },
+    {
+      "cpu_multiplier": 0.529,
+      "description": "CPU-optimized instances serving as Enterprise Search nodes. Based on AWS's c5d family.",
+      "discrete_sizes": {
+        "default_size": 2048,
+        "resource": "memory",
+        "sizes": [
+          2048,
+          4096,
+          8192,
+          17408
+        ]
+      },
+      "id": "aws.enterprisesearch.c5d",
+      "instance_type": "enterprise_search",
+      "name": "aws.enterprisesearch.c5d",
+      "node_types": [
+        "appserver",
+        "connector",
+        "worker"
+      ],
+      "storage_multiplier": 12
+    }
+  ],
+  "kibana_deeplink": [
+    {
+      "semver": "\u003e=7.9.0",
+      "uri": "/app/home"
+    },
+    {
+      "semver": "\u003c7.9.0",
+      "uri": "/app/kibana#/home"
+    }
+  ],
+  "metadata": [
+    {
+      "key": "trial-eligible",
+      "value": "true"
+    },
+    {
+      "key": "parent_solution",
+      "value": "stack"
+    }
+  ],
+  "name": "General purpose",
+  "order": 3,
+  "system_owned": true,
+  "template_category_id": "general-purpose"
+}
