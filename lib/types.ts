@@ -4,8 +4,8 @@ export interface Scenario {
   version: string
   esSpec: string
   kbSpec: string
-  alerts: number
-  alertInterval: string
+  ruleCount: number
+  ruleInterval: string
   tmPollInterval: number
   tmMaxWorkers: number
   template?: string 
@@ -160,8 +160,8 @@ export interface EventLogRecord {
   date: string
   duration: number
   outcome: string
-  alert?: string
-  action?: string
+  rule?: string
+  connector?: string
   drift?: number
 }
 
