@@ -1,3 +1,13 @@
+note: `kbn-alert-load` has moved!
+===============================================================================
+
+We're rebuilding it - better, stronger, faster.
+
+For now, private, probably eventually public, at
+
+https://github.com/elastic/kbn-alert-load
+
+
 kbn-alert-load: command-line utility for doing kibana alerting load tests
 ===============================================================================
 
